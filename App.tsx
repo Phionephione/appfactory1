@@ -13,6 +13,7 @@ import { GithubIcon } from './components/icons';
 export default function App() {
   const [appState, setAppState] = useState<AppState>(AppState.IDLE);
   const [prompt, setPrompt] = useState<string>('');
+  const [geminiApiKey, setGeminiApiKey] = useState<string>('');
   const [generatedFiles, setGeneratedFiles] = useState<GeneratedFile[]>([]);
   const [suggestedRepoName, setSuggestedRepoName] = useState<string>('');
   const [repoUrl, setRepoUrl] = useState<string>('');
@@ -20,24 +21,24 @@ export default function App() {
   const [publishError, setPublishError] = useState<string | null>(null);
 
   const handleGenerate = useCallback(async () => {
-    if (!prompt.trim()) {
-      setError('Please enter a description for your website.');
+    if (!prompt.trim() || !geminiApiKey.trim()) {
+      setError('Please provide a description and your Gemini API Key.');
       setAppState(AppState.ERROR);
       return;
     }
     setError(null);
     setAppState(AppState.GENERATING);
     try {
-      const { files, suggestedRepoName } = await generateWebsiteCode(prompt);
+      const { files, suggestedRepoName } = await generateWebsiteCode(prompt, geminiApiKey);
       setGeneratedFiles(files);
       setSuggestedRepoName(suggestedRepoName);
       setAppState(AppState.GENERATED);
     } catch (e) {
       console.error(e);
-      setError('Failed to generate website. Please check the console for details.');
+      setError(`Failed to generate website. Check your API key and console for details. Error: ${(e as Error).message}`);
       setAppState(AppState.ERROR);
     }
-  }, [prompt]);
+  }, [prompt, geminiApiKey]);
 
   const handlePublish = useCallback(async (token: string, repoName: string) => {
     if (!token.trim() || !repoName.trim()) {
@@ -68,6 +69,7 @@ export default function App() {
   const handleReset = () => {
     setAppState(AppState.IDLE);
     setPrompt('');
+    // Do not reset the API key for convenience
     setGeneratedFiles([]);
     setSuggestedRepoName('');
     setRepoUrl('');
@@ -78,7 +80,13 @@ export default function App() {
   const renderContent = () => {
     switch (appState) {
       case AppState.IDLE:
-        return <PromptForm prompt={prompt} setPrompt={setPrompt} onGenerate={handleGenerate} />;
+        return <PromptForm 
+                  prompt={prompt} 
+                  setPrompt={setPrompt} 
+                  apiKey={geminiApiKey}
+                  setApiKey={setGeminiApiKey}
+                  onGenerate={handleGenerate} 
+                />;
       case AppState.GENERATING:
         return <Loader text="Weaving your code with AI magic... this may take a moment." />;
       case AppState.GENERATED:

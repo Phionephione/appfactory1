@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { GeneratedFile } from '../types';
 
@@ -56,8 +55,11 @@ Follow these rules strictly:
 `;
 
 
-export const generateWebsiteCode = async (prompt: string): Promise<{ files: GeneratedFile[], suggestedRepoName: string }> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+export const generateWebsiteCode = async (prompt: string, apiKey: string): Promise<{ files: GeneratedFile[], suggestedRepoName: string }> => {
+  if (!apiKey) {
+    throw new Error("Gemini API key is required.");
+  }
+  const ai = new GoogleGenAI({ apiKey });
   
   const result = await ai.models.generateContent({
     model: 'gemini-2.5-pro',
