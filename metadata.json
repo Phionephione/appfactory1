@@ -1,0 +1,5 @@
+{
+  "name": "AI Web Weaver",
+  "description": "An AI-powered application that takes a prompt, generates a complete React website, and creates a new GitHub repository with the code, ready for deployment.",
+  "requestFramePermissions": []
+}
